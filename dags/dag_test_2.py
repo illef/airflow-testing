@@ -4,7 +4,7 @@ from airflow.operators.empty import EmptyOperator
 import pendulum
 
 with DAG(
-    dag_id="dag_test1",
+    dag_id="dag_test2",
     start_date=pendulum.today("UTC").add(days=-3),
     schedule=None,
 ) as dag:
