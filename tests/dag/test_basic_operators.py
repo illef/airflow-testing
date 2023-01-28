@@ -1,0 +1,46 @@
+from airflow.utils.state import DagRunState
+import pendulum
+from airflow.models.taskinstance import TaskInstance
+from dags.dag_basic import bash_task, python_task, python_task_2, dag
+
+
+def test_bash_operator():
+    out = bash_task.execute({})
+    assert out == "1"
+
+
+def test_python_operator():
+    out = python_task.execute({})
+    assert out == 1
+
+
+def test_python_operator_2():
+    out = python_task_2.execute({})
+    assert out == "{{ ds }}"
+
+    # NOTE 우리가 원하는 결과는 ds 가 아닌 DAG run 의 logical date 이다.
+    # 이를 위해선 task 가 실행되는 과정을 이해해야 한다.
+
+    # 1. Build task instance concext
+    # 2. Clear XCom data for current task instance
+    # 3. Render templated variables
+    # 4. Run operator.pre_execute()
+    # 5. Run operator.execute()
+    # 6. Push return value to XCom
+    # 7. Run operator.post_execute()
+
+    # 여기선 1, 3, 5 로 충분하다.
+
+    # 1. Build task instance concext
+    dag.create_dagrun(
+        state=DagRunState.RUNNING,
+        execution_date=pendulum.now("UTC"),
+        run_id="dag_run_id",
+    )
+    ti = TaskInstance(task=python_task_2, run_id="dag_run_id")
+    # 3. Render templated variables
+    ti.render_templates()
+    assert python_task_2.op_kwargs == {"foo": pendulum.now("UTC").to_date_string()}
+    # 5. Run operator.execute()
+    out = python_task_2.execute(ti.get_template_context())
+    assert out == pendulum.today("UTC").to_date_string()
