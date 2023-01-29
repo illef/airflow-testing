@@ -9,6 +9,11 @@ def return_arg(foo: str) -> str:
     return foo
 
 
+def use_xcom(**context) -> str:
+    context["task_instance"].xcom_push(key="xcom_push_value", value="test")
+    return context["ds"]
+
+
 with DAG(
     dag_id="basic_operators",
     start_date=pendulum.today("UTC").add(days=-3),
@@ -28,4 +33,9 @@ with DAG(
         task_id="python_task_2",
         python_callable=return_arg,
         op_kwargs={"foo": "{{ ds }}"},
+    )
+
+    python_task_3 = PythonOperator(
+        task_id="python_task_3",
+        python_callable=use_xcom,
     )
