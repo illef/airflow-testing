@@ -4,6 +4,6 @@ USER airflow
 
 # 테스트 실행을 위해 airflow db 를 초기화 해야 한다
 RUN airflow db init
-RUN pip install pytest
+RUN pip install pytest pytest-fzf
 
 ENV SQLALCHEMY_SILENCE_UBER_WARNING=1
