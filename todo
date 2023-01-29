@@ -1,0 +1,5 @@
+* test templated_rendered variable
+* test DAG's leaf
+* test task_group
+* run DAG cli without airflow using whirl
+
